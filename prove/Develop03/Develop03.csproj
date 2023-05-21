@@ -1,11 +1,109 @@
+import random
+import datetime
 
-<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net7.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>disable</Nullable>
-  </PropertyGroup>
+class Entry:
+    def __init__(self, prompt, response, date):
+        self.prompt = prompt
+        self.response = response
+        self.date = date
 
-</Project>
+
+class Journal:
+    def __init__(self):
+        self.entries = []
+
+    def add_entry(self, entry):
+        self.entries.append(entry)
+
+    def display_entries(self):
+        for entry in self.entries:
+            print("Date:", entry.date)
+            print("Prompt:", entry.prompt)
+            print("Response:", entry.response)
+            print()
+
+    def save_to_file(self, filename):
+        with open(filename, 'w') as file:
+            for entry in self.entries:
+                file.write(entry.date + '\n')
+                file.write(entry.prompt + '\n')
+                file.write(entry.response + '\n')
+                file.write('\n')
+
+    def load_from_file(self, filename):
+        self.entries = []
+        with open(filename, 'r') as file:
+            lines = file.readlines()
+            for i in range(0, len(lines), 4):
+                date = lines[i].strip()
+                prompt = lines[i+1].strip()
+                response = lines[i+2].strip()
+                self.add_entry(Entry(prompt, response, date))
+
+
+class Program:
+    def __init__(self):
+        self.journal = Journal()
+        self.prompts = [
+            "Who was the most interesting person I interacted with today?",
+            "What was the best part of my day?",
+            "How did I see the hand of the Lord in my life today?",
+            "What was the strongest emotion I felt today?",
+            "If I had one thing I could do over today, what would it be?"
+        ]
+
+    def run(self):
+        while True:
+            print("Journal Program")
+            print("1. Write a new entry")
+            print("2. Display the journal")
+            print("3. Save the journal to a file")
+            print("4. Load the journal from a file")
+            print("5. Quit")
+
+            choice = input("Enter your choice (1-5): ")
+
+            if choice == "1":
+                self.write_new_entry()
+            elif choice == "2":
+                self.display_journal()
+            elif choice == "3":
+                self.save_journal_to_file()
+            elif choice == "4":
+                self.load_journal_from_file()
+            elif choice == "5":
+                break
+            else:
+                print("Invalid choice. Please try again.")
+
+    def write_new_entry(self):
+        prompt = random.choice(self.prompts)
+        response = input("Enter your response: ")
+        date = datetime.date.today().strftime("%Y-%m-%d")
+        entry = Entry(prompt, response, date)
+        self.journal.add_entry(entry)
+        print("Entry added successfully!")
+
+    def display_journal(self):
+        if len(self.journal.entries) == 0:
+            print("No entries to display.")
+        else:
+            print("Journal Entries:")
+            self.journal.display_entries()
+
+    def save_journal_to_file(self):
+        filename = input("Enter the filename to save the journal: ")
+        self.journal.save_to_file(filename)
+        print("Journal saved to", filename, "successfully!")
+
+    def load_journal_from_file(self):
+        filename = input("Enter the filename to load the journal: ")
+        self.journal.load_from_file(filename)
+        print("Journal loaded from", filename, "successfully!")
+
+
+if __name__ == "__main__":
+    program = Program()
+    program.run()
+
