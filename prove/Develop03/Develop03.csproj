@@ -1,109 +1,86 @@
 import random
-import datetime
+import os
+
+class Word:
+    def __init__(self, word):
+        self.word = word
+        self.hidden = False
+
+    def hide_word(self):
+        self.hidden = True
+
+    def display(self):
+        if self.hidden:
+            return "___"
+        else:
+            return self.word
 
 
-class Entry:
-    def __init__(self, prompt, response, date):
-        self.prompt = prompt
-        self.response = response
-        self.date = date
+class Reference:
+    def __init__(self, reference):
+        self.reference = reference
+
+    def display(self):
+        return self.reference
 
 
-class Journal:
-    def __init__(self):
-        self.entries = []
+class Scripture:
+    def __init__(self, reference, text):
+        self.reference = reference
+        self.words = []
+        self.construct_words(text)
 
-    def add_entry(self, entry):
-        self.entries.append(entry)
+    def construct_words(self, text):
+        words_list = text.split()
+        for word in words_list:
+            self.words.append(Word(word))
 
-    def display_entries(self):
-        for entry in self.entries:
-            print("Date:", entry.date)
-            print("Prompt:", entry.prompt)
-            print("Response:", entry.response)
-            print()
+    def hide_random_word(self):
+        hidden_words = [word for word in self.words if word.hidden]
+        if hidden_words and len(hidden_words) == len(self.words):
+            return False
 
-    def save_to_file(self, filename):
-        with open(filename, 'w') as file:
-            for entry in self.entries:
-                file.write(entry.date + '\n')
-                file.write(entry.prompt + '\n')
-                file.write(entry.response + '\n')
-                file.write('\n')
+        word = random.choice(self.words)
+        if not word.hidden:
+            word.hide_word()
+            return True
+        else:
+            return self.hide_random_word()
 
-    def load_from_file(self, filename):
-        self.entries = []
-        with open(filename, 'r') as file:
-            lines = file.readlines()
-            for i in range(0, len(lines), 4):
-                date = lines[i].strip()
-                prompt = lines[i+1].strip()
-                response = lines[i+2].strip()
-                self.add_entry(Entry(prompt, response, date))
+    def display(self):
+        scripture_text = ""
+        for word in self.words:
+            scripture_text += word.display() + " "
+        return f"{self.reference.display()}\n{scripture_text.strip()}"
 
 
 class Program:
     def __init__(self):
-        self.journal = Journal()
-        self.prompts = [
-            "Who was the most interesting person I interacted with today?",
-            "What was the best part of my day?",
-            "How did I see the hand of the Lord in my life today?",
-            "What was the strongest emotion I felt today?",
-            "If I had one thing I could do over today, what would it be?"
-        ]
+        self.scripture = None
 
     def run(self):
+        self.get_scripture()
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print(self.scripture.display())
+        self.prompt_user()
+
+    def get_scripture(self):
+        reference = input("Enter the scripture reference: ")
+        text = input("Enter the scripture text: ")
+        self.scripture = Scripture(Reference(reference), text)
+
+    def prompt_user(self):
         while True:
-            print("Journal Program")
-            print("1. Write a new entry")
-            print("2. Display the journal")
-            print("3. Save the journal to a file")
-            print("4. Load the journal from a file")
-            print("5. Quit")
-
-            choice = input("Enter your choice (1-5): ")
-
-            if choice == "1":
-                self.write_new_entry()
-            elif choice == "2":
-                self.display_journal()
-            elif choice == "3":
-                self.save_journal_to_file()
-            elif choice == "4":
-                self.load_journal_from_file()
-            elif choice == "5":
+            user_input = input("\nPress Enter to continue or type 'quit' to exit: ")
+            if user_input.lower() == 'quit':
                 break
             else:
-                print("Invalid choice. Please try again.")
-
-    def write_new_entry(self):
-        prompt = random.choice(self.prompts)
-        response = input("Enter your response: ")
-        date = datetime.date.today().strftime("%Y-%m-%d")
-        entry = Entry(prompt, response, date)
-        self.journal.add_entry(entry)
-        print("Entry added successfully!")
-
-    def display_journal(self):
-        if len(self.journal.entries) == 0:
-            print("No entries to display.")
-        else:
-            print("Journal Entries:")
-            self.journal.display_entries()
-
-    def save_journal_to_file(self):
-        filename = input("Enter the filename to save the journal: ")
-        self.journal.save_to_file(filename)
-        print("Journal saved to", filename, "successfully!")
-
-    def load_journal_from_file(self):
-        filename = input("Enter the filename to load the journal: ")
-        self.journal.load_from_file(filename)
-        print("Journal loaded from", filename, "successfully!")
+                os.system('cls' if os.name == 'nt' else 'clear')
+                if not self.scripture.hide_random_word():
+                    break
+                print(self.scripture.display())
 
 
-if __name__ == "__main__":
-    program = Program()
-    program.run()
-
+# Run the program
+program = Program()
+program.run()
